@@ -79,8 +79,8 @@ class GnuPlot(object):
 
     def __del__(self):
         for f in self._files:
-            print('removing temp file', f)
             os.remove(f)
+            self._print('removed temp file %s' % f)
 
     def _prepare_png(self):
         self._print('!! PNG output selected: I will generate an SVG first '
@@ -97,11 +97,14 @@ class GnuPlot(object):
         if close:
             os.close(fd)
         self._files.append(path)
-        print('created temp file', path, end='')
+
+        o = 'created temp file %s ' % path
         if close:
-            print(' (closed)')
+            o += '(closed)'
         else:
-            print(' (open)')
+            o += '(open)'
+        self._print(o)
+
         return fd, path
 
     def write(self, gnuplot, data):
