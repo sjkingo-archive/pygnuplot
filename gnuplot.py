@@ -77,6 +77,11 @@ class GnuPlot(object):
         if self.output_ext == 'png':
             self._prepare_png()
 
+    def __del__(self):
+        for f in self._files:
+            print('removing temp file', f)
+            os.remove(f)
+
     def _prepare_png(self):
         self._print('!! PNG output selected: I will generate an SVG first '
                 'and then call ImageMagick\'s `convert` to convert it to '
@@ -86,11 +91,6 @@ class GnuPlot(object):
         if self.output_fp is not None:
             self.output_filename_orig += '.png'
         _, self.output_filename = self._mktmp(suffix='.gnuplot-output.svg')
-
-    def __del__(self):
-        for f in self._files:
-            print('removing temp file', f)
-            os.remove(f)
 
     def _mktmp(self, close=True, **kwargs):
         fd, path = mkstemp(**kwargs)
