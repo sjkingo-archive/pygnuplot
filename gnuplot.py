@@ -3,7 +3,6 @@
 from __future__ import print_function
 from tempfile import mkstemp
 import os
-from time import sleep
 import subprocess
 
 class GnuPlot(object):
@@ -144,6 +143,5 @@ class GnuPlot(object):
         self.write(g, p)
         self.write(g, 'unset output') # needed to flush before quiting
 
-        sleep(1) # give it 1 second to flush
         self.write(g, 'quit')
         g.kill()
