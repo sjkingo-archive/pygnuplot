@@ -21,7 +21,7 @@ class GnuPlot(object):
         'opacity': 1.0,
         'opacity_border': False,
         'font_face': 'Minion Pro',
-        'font_size': 16,
+        'font_size': 12,
     }
 
     _output_types = {
