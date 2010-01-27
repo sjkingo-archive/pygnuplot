@@ -209,6 +209,8 @@ class GnuPlot(object):
         self.write(g, p)
         self.write(g, 'unset output') # needed to flush before quiting
 
+        self._print('finished plotting, waiting for gnuplot to flush output...')
         sleep(1)
         self.write(g, 'quit')
         g.kill()
+        self._print('gnuplot done')
