@@ -93,6 +93,11 @@ class GnuPlot(object):
                 s += ' noborder'
             self.write(g, s)
 
+        if self.opts.get('xlabel', None) is not None:
+            self.write(g, 'set xlabel "%s"' % self.opts.get('xlabel'))
+        if self.opts.get('ylabel', None) is not None:
+            self.write(g, 'set ylabel "%s"' % self.opts.get('ylabel'))
+
         p = ''
         for n, (label, path, num_axes) in enumerate(plots):
             axes = ':'.join([str(x) for x in xrange(1, num_axes + 1)])

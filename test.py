@@ -2,7 +2,8 @@
 
 from gnuplot import GnuPlot
 
-g = GnuPlot('test.png', filled=True, filled_familiar_colour='red', opacity=0.5)
+g = GnuPlot('test.svg', filled=True, filled_familiar_colour='red', opacity=0.5,
+        xlabel='Accuracy (%%)', ylabel='Iterations')
 
 s = """0   4.098360    3.884533
 50  55.59515    38.48895
