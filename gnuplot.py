@@ -84,10 +84,9 @@ class GnuPlot(object):
                 'and then call ImageMagick\'s `convert` to convert it to '
                 'a PNG - all because gd2 has no antialias support :-(')
         self._convert_png = True
-        if self.output_fp is not None:
-            raise Exception('XXX Sorry, converting to PNG with a '
-                    'file-like object is not yet supported')
         self.output_filename_orig = self.output_filename
+        if self.output_fp is not None:
+            self.output_filename_orig += '.png'
         fd, self.output_filename = mkstemp(suffix='.gnuplot-output.svg')
         os.close(fd)
         self._files.append(self.output_filename)
