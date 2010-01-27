@@ -34,6 +34,8 @@ class GnuPlot(object):
         self.output_ext = os.path.splitext(self.output_filename)[1][1:]
         self._verbose = verbose
 
+        self._files = [] #: list of files to clean up when destroyed
+
         self.opts = dict(self._default_opts)
         for k, v in kwargs.items():
             self.opts[k] = v
@@ -45,6 +47,10 @@ class GnuPlot(object):
                 not os.path.isfile(self.opts.get('font_face')):
             raise ValueError('When png output is selected, font_face must '
                     'be the full path to a font face, including extension.')
+
+    def __del__(self):
+        for f in self._files:
+            os.remove(f)
 
     @classmethod
     def write(cls, gnuplot, data):
@@ -59,6 +65,7 @@ class GnuPlot(object):
         files = []
         for label, vals in data_points:
             fd, path = mkstemp(suffix='.gnuplot-%s' % label, text=True)
+            self._files.append(path)
             files.append((label, path, len(vals[0])))
             for coords in vals:
                 for i, x in enumerate(coords):
@@ -70,8 +77,6 @@ class GnuPlot(object):
             os.close(fd)
 
         self._call_gnuplot(files)
-        for _, path, _ in files:
-            os.remove(path)
 
     def _call_gnuplot(self, plots):
         g = subprocess.Popen(['gnuplot'], stdin=subprocess.PIPE)
