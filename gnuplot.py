@@ -51,17 +51,6 @@ class GnuPlot(object):
         gnuplot.stdin.write('%s\n' % data)
         gnuplot.stdin.flush()
 
-    #@classmethod
-    #def check_inputs(cls, data_points):
-    #    if len(data_points) < 1:
-    #        raise ValueError('Nothing to plot')
-    #
-    #    first_len = len(data_points[0][1])
-    #    for label, vals in data_points:
-    #        if len(vals) != first_len:
-    #            raise ValueError('Not all plots are the same length '
-    #                    '(%s)' % label)
-
     def _print(self, str):
         if self._verbose:
             print(str)
