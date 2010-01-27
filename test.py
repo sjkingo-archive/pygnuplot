@@ -1,11 +1,10 @@
 #!/usr/bin/env python2.6
 
 from gnuplot import GnuPlot
+from StringIO import StringIO
 
-fp = open('1.svg', 'wb')
-
-g = GnuPlot(fp, filled=True, filled_familiar_colour='red', opacity=0.5,
-        xlabel='Accuracy (%)', ylabel='Iterations', verbose=True, type='svg')
+g = GnuPlot('test.svg', filled=True, filled_familiar_colour='red', opacity=0.5,
+        xlabel='Accuracy (%)', ylabel='Iterations', verbose=True, title='Test SVG')
 
 s = """0   4.098360    3.884533
 50  55.59515    38.48895
@@ -27,8 +26,6 @@ g.plot([
     ('familiar', fam),
     ('unfamiliar', unfam),
 ])
-
-fp.close()
 
 #g.plot([
 #    ('test1', [(0, 1, 3), (1, 2, 3), (2, 3, 3)]),

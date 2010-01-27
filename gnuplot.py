@@ -22,6 +22,7 @@ class GnuPlot(object):
         'opacity_border': False,
         'font_face': 'Minion Pro', # XXX this won't work for PNG
         'font_size': 12,
+        'legend_location': 'outside right',
     }
 
     _output_types = {
@@ -123,6 +124,10 @@ class GnuPlot(object):
         self.write(g, 'set term %s' % (self._output_types[self.output_ext] %
                 (self.opts.get('font_face'), self.opts.get('font_size'))))
         self.write(g, 'set output "%s"' % self.output_filename)
+        self.write(g, 'set key %s' % self.opts.get('legend_location'))
+
+        if self.opts.get('title', None) is not None:
+            self.write(g, 'set title "%s"' % self.opts.get('title'))
 
         if self.opts.get('opacity') != 1.0:
             s = 'set style fill solid %.3f' % (self.opts.get('opacity'))
