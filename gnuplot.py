@@ -30,9 +30,11 @@ class GnuPlot(object):
         'png': 'png transparent interlace enhanced font "%s" %d',
     }
 
-    def __init__(self, output_filename, **kwargs):
+    def __init__(self, output_filename, verbose=False, **kwargs):
         self.output_filename = output_filename
         self.output_ext = os.path.splitext(self.output_filename)[1][1:]
+        self._verbose = verbose
+
         self.opts = dict(self._default_opts)
         for k, v in kwargs.items():
             self.opts[k] = v
@@ -60,6 +62,10 @@ class GnuPlot(object):
     #        if len(vals) != first_len:
     #            raise ValueError('Not all plots are the same length '
     #                    '(%s)' % label)
+
+    def _print(self, str):
+        if self._verbose:
+            print(str)
 
     def plot(self, data_points):
         files = []
@@ -134,6 +140,7 @@ class GnuPlot(object):
                         self.opts.get('filled_%s_colour' % label, 
                         self.opts.get('filled_colour'))
 
+        self._print(p)
         self.write(g, p)
         self.write(g, 'unset output') # needed to flush before quiting
 

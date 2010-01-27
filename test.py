@@ -3,7 +3,7 @@
 from gnuplot import GnuPlot
 
 g = GnuPlot('test.svg', filled=True, filled_familiar_colour='red', opacity=0.5,
-        xlabel='Accuracy (%)', ylabel='Iterations')
+        xlabel='Accuracy (%)', ylabel='Iterations', verbose=True)
 
 s = """0   4.098360    3.884533
 50  55.59515    38.48895
