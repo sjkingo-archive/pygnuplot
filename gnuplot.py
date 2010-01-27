@@ -24,7 +24,7 @@ class GnuPlot(object):
         'filled_colour': 'skyblue', # see 'gnuplot> show palette colornames'
         'opacity': 1.0,
         'opacity_border': False,
-        'font_face': 'Minion Pro', # XXX this won't work for PNG
+        'font_face': 'Minion Pro',
         'font_size': 12,
         'legend_location': 'outside right',
         'width': 800,
@@ -34,7 +34,7 @@ class GnuPlot(object):
     _output_types = {
         'eps': 'postscript eps enhanced color font "%s" %d',
         'svg': 'svg font "%s,%d"',
-        'png': 'svg font "%s,%d"', # we convert svg to png because libgd sucks
+        'png': 'svg font "%s,%d"', # we convert svg to png because gd2 sucks
     }
 
     _files = [] #: list of files to remove when destroyed
