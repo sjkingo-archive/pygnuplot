@@ -2,7 +2,6 @@
 
 import logging
 from tempfile import mkstemp
-from time import sleep
 import os
 import subprocess
 
@@ -216,7 +215,6 @@ class GnuPlot(object):
         self.write(g, 'unset output') # needed to flush before quiting
 
         logging.info('finished plotting, waiting for gnuplot to flush output...')
-        sleep(1)
         self.write(g, 'quit')
-        g.kill()
+        g.wait()
         logging.info('gnuplot done')
