@@ -4,6 +4,8 @@ from gnuplot import GnuPlot
 from StringIO import StringIO
 import sys
 
+#fp = StringIO()
+
 g = GnuPlot(sys.argv[1], filled=True, filled_familiar_colour='red', opacity=0.5,
         xlabel='Accuracy (%)', ylabel='Iterations', verbose=True, title='Test SVG')
 
@@ -27,6 +29,10 @@ g.plot([
     ('familiar', fam),
     ('unfamiliar', unfam),
 ])
+
+#fp.seek(0)
+#with open('out.png', 'wb') as png:
+#    png.write(fp.read())
 
 #g.plot([
 #    ('test1', [(0, 1, 3), (1, 2, 3), (2, 3, 3)]),
