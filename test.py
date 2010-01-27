@@ -2,8 +2,9 @@
 
 from gnuplot import GnuPlot
 from StringIO import StringIO
+import sys
 
-g = GnuPlot('test.svg', filled=True, filled_familiar_colour='red', opacity=0.5,
+g = GnuPlot(sys.argv[1], filled=True, filled_familiar_colour='red', opacity=0.5,
         xlabel='Accuracy (%)', ylabel='Iterations', verbose=True, title='Test SVG')
 
 s = """0   4.098360    3.884533
