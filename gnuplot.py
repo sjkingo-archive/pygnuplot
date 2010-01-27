@@ -154,10 +154,11 @@ class GnuPlot(object):
         g = subprocess.Popen(['gnuplot'], stdin=subprocess.PIPE)
 
         self.write(g, 'set fontpath "/usr/share/fonts/!:/usr/local/share/fonts/!"')
-        self.write(g, 'set term %s' % (self._output_types[self.output_ext] %
-                (self.opts.get('font_face'), self.opts.get('font_size')) + 
-                ' size %d, %d' % (self.opts.get('width'),
-                self.opts.get('height'))))
+        t = 'set term %s' % (self._output_types[self.output_ext] %
+                (self.opts.get('font_face'), self.opts.get('font_size')))
+        if self.output_ext != 'eps':
+            t += ' size %d, %d' % (self.opts.get('width'), self.opts.get('height'))
+        self.write(g, t)
         self.write(g, 'set output "%s"' % self.output_filename)
         self.write(g, 'set key %s' % self.opts.get('legend_location'))
 
