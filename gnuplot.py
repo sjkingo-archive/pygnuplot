@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 from tempfile import mkstemp
+from time import sleep
 import os
 import subprocess
 
@@ -19,7 +20,7 @@ class GnuPlot(object):
         'filled_colour': 'skyblue', # see 'gnuplot> show palette colornames'
         'opacity': 1.0,
         'opacity_border': False,
-        'font_face': 'Minion Pro',
+        'font_face': 'Minion Pro', # XXX this won't work for PNG
         'font_size': 12,
     }
 
@@ -29,20 +30,51 @@ class GnuPlot(object):
         'png': 'png transparent interlace enhanced font "%s" %d',
     }
 
-    def __init__(self, output_filename, verbose=False, **kwargs):
-        self.output_filename = output_filename
-        self.output_ext = os.path.splitext(self.output_filename)[1][1:]
+    _files = [] #: list of files to remove when destroyed
+    output_fp = None #: file-like object to write final graph to, or None
+    output_filename = None #: filename to write output to
+
+    def __init__(self, output, type=None, verbose=False, **kwargs):
         self._verbose = verbose
 
-        self._files = [] #: list of files to clean up when destroyed
+        # If output is a file-like object, we write to a temporary file
+        # and then copy (byte for byte, yuk) to the given pointer. This
+        # allows in-memory graphing by passing us a StringIO instance.
+        if hasattr(output, 'write'):
+            if output.closed:
+                raise IOError('The file-like object passed is not open')
+            self.output_fp = output
+            fd, self.output_filename = mkstemp(suffix='.gnuplot-output')
+            os.close(fd)
+            self._files.append(self.output_filename)
+        else:
+            self.output_filename = output
 
+        # If we got a file-like object, type must be set
+        if self.output_fp is not None and type is None:
+            raise ValueError('__init__ was passed a file-like object: '
+                    'this requires the keyword argument `type` to be set!')
+
+        # The type is normally inferred from the file extension, but it
+        # can be overridden (and must be if the output is a file-like).
+        #
+        # Note we don't blindly support any type, so check if the type is
+        # supported too.
+        if type is not None:
+            self.output_ext = type
+        else:
+            self.output_ext = os.path.splitext(self.output_filename)[1][1:]
+        if self.output_ext not in self._output_types:
+            raise ValueError('Unknown output type %s' % self.output_ext)
+
+        # Merge the passed keyword arguments with the default options
         self.opts = dict(self._default_opts)
         for k, v in kwargs.items():
             self.opts[k] = v
 
-        if self.output_ext not in self._output_types:
-            raise ValueError('Unknown output type %s' % self.output_ext)
-
+        # gnuplot's PNG support requires the font face to be the actual 
+        # path to a face, as it can't check in the system font directories.
+        # Bail if the file doesn't exist.
         if self.output_ext == 'png' and \
                 not os.path.isfile(self.opts.get('font_face')):
             raise ValueError('When png output is selected, font_face must '
@@ -50,10 +82,11 @@ class GnuPlot(object):
 
     def __del__(self):
         for f in self._files:
+            print('removing temp file', f)
             os.remove(f)
 
-    @classmethod
-    def write(cls, gnuplot, data):
+    def write(self, gnuplot, data):
+        self._print(data)
         gnuplot.stdin.write('%s\n' % data)
         gnuplot.stdin.flush()
 
@@ -77,6 +110,11 @@ class GnuPlot(object):
             os.close(fd)
 
         self._call_gnuplot(files)
+
+        # Transfer the file into the given fp
+        if self.output_fp is not None:
+            with open(self.output_filename, 'r') as fp:
+                self.output_fp.write(fp.read())
 
     def _call_gnuplot(self, plots):
         g = subprocess.Popen(['gnuplot'], stdin=subprocess.PIPE)
@@ -133,9 +171,9 @@ class GnuPlot(object):
                         self.opts.get('filled_%s_colour' % label, 
                         self.opts.get('filled_colour'))
 
-        self._print(p)
         self.write(g, p)
         self.write(g, 'unset output') # needed to flush before quiting
 
+        sleep(1)
         self.write(g, 'quit')
         g.kill()
