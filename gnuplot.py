@@ -30,10 +30,11 @@ class GnuPlot(object):
     _output_types = {
         'eps': 'postscript eps enhanced color font "%s" %d',
         'svg': 'svg font "%s,%d"',
-        'png': 'png transparent interlace enhanced font "%s" %d',
+        'png': 'svg font "%s,%d"', # we convert svg to png because libgd sucks
     }
 
     _files = [] #: list of files to remove when destroyed
+    _convert_png = False #: whether to convert to a PNG using imagemagick
     output_fp = None #: file-like object to write final graph to, or None
     output_filename = None #: filename to write output to
 
@@ -75,13 +76,18 @@ class GnuPlot(object):
         for k, v in kwargs.items():
             self.opts[k] = v
 
-        # gnuplot's PNG support requires the font face to be the actual 
-        # path to a face, as it can't check in the system font directories.
-        # Bail if the file doesn't exist.
-        if self.output_ext == 'png' and \
-                not os.path.isfile(self.opts.get('font_face')):
-            raise ValueError('When png output is selected, font_face must '
-                    'be the full path to a font face, including extension.')
+        if self.output_ext == 'png':
+            self._print('png extension selected: will generate an svg and '
+                    'call imagemagick to convert it to png - stupid libgd '
+                    'fails with png support')
+            self._convert_png = True
+            if self.output_fp is not None:
+                raise Exception('XXX Sorry, converting to PNG with a '
+                        'file-like object is not yet supported')
+            self.output_filename_orig = self.output_filename
+            fd, self.output_filename = mkstemp(suffix='.gnuplot-output.svg')
+            os.close(fd)
+            self._files.append(self.output_filename)
 
     def __del__(self):
         for f in self._files:
@@ -113,6 +119,16 @@ class GnuPlot(object):
             os.close(fd)
 
         self._call_gnuplot(files)
+
+        # If png format, convert it from SVG
+        if self._convert_png:
+            input = self.output_filename
+            self.output_filename = self.output_filename_orig
+            args = ['convert', input, '-transparent', 'white',
+                    self.output_filename]
+            self._print(' '.join(args))
+            g = subprocess.Popen(args)
+            g.wait()
 
         # Transfer the file into the given fp
         if self.output_fp is not None:
