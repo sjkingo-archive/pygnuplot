@@ -20,11 +20,14 @@ class GnuPlot(object):
         'filled_colour': 'skyblue', # see 'gnuplot> show palette colornames'
         'opacity': 1.0,
         'opacity_border': False,
+        'font_face': 'Minion Pro',
+        'font_size': 16,
     }
 
     _output_types = {
-        'eps': 'postscript eps enhanced color',
-        'svg': 'svg',
+        'eps': 'postscript eps enhanced color font "%s" %d',
+        'svg': 'svg font "%s,%d"',
+        'png': 'png transparent interlace enhanced font "%s" %d',
     }
 
     def __init__(self, output_filename, **kwargs):
@@ -36,6 +39,11 @@ class GnuPlot(object):
 
         if self.output_ext not in self._output_types:
             raise ValueError('Unknown output type %s' % self.output_ext)
+
+        if self.output_ext == 'png' and \
+                not os.path.isfile(self.opts.get('font_face')):
+            raise ValueError('When png output is selected, font_face must '
+                    'be the full path to a font face, including extension.')
 
     @classmethod
     def write(cls, gnuplot, data):
@@ -74,7 +82,9 @@ class GnuPlot(object):
     def _call_gnuplot(self, plots):
         g = subprocess.Popen(['gnuplot'], stdin=subprocess.PIPE)
 
-        self.write(g, 'set term %s' % self._output_types[self.output_ext])
+        self.write(g, 'set fontpath "/usr/share/fonts/!:/usr/local/share/fonts/!"')
+        self.write(g, 'set term %s' % (self._output_types[self.output_ext] %
+                (self.opts.get('font_face'), self.opts.get('font_size'))))
         self.write(g, 'set output "%s"' % self.output_filename)
 
         if self.opts.get('opacity') != 1.0:
