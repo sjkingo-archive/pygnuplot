@@ -1,10 +1,16 @@
 #!/usr/bin/env python2.6
 
 from __future__ import print_function
+import logging
 from tempfile import mkstemp
 from time import sleep
 import os
 import subprocess
+
+logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s %(levelname)s: %(message)s',
+)
 
 class GnuPlot(object):
     _plot_types = {
@@ -39,7 +45,8 @@ class GnuPlot(object):
     output_filename = None #: filename to write output to
 
     def __init__(self, output, type=None, verbose=False, **kwargs):
-        self._verbose = verbose
+        if not verbose:
+            logging.disable(logging.CRITICAL) # disables all levels
 
         # If output is a file-like object, we write to a temporary file
         # and then copy (byte for byte, yuk) to the given pointer. This
@@ -80,10 +87,10 @@ class GnuPlot(object):
     def __del__(self):
         for f in self._files:
             os.remove(f)
-            self._print('removed temp file %s' % f)
+            logging.info('removed temp file %s' % f)
 
     def _prepare_png(self):
-        self._print('!! PNG output selected: I will generate an SVG first '
+        logging.warning('PNG output selected: I will generate an SVG first '
                 'and then call ImageMagick\'s `convert` to convert it to '
                 'a PNG - all because gd2 has no antialias support :-(')
         self._convert_png = True
@@ -103,18 +110,14 @@ class GnuPlot(object):
             o += '(closed)'
         else:
             o += '(open)'
-        self._print(o)
+        logging.info(o)
 
         return fd, path
 
     def write(self, gnuplot, data):
-        self._print(data)
+        logging.info(data)
         gnuplot.stdin.write('%s\n' % data)
         gnuplot.stdin.flush()
-
-    def _print(self, str):
-        if self._verbose:
-            print(str)
 
     def plot(self, data_points):
         files = []
@@ -139,7 +142,7 @@ class GnuPlot(object):
             self.output_filename = self.output_filename_orig
             args = ['convert', input, '-transparent', 'white',
                     self.output_filename]
-            self._print(' '.join(args))
+            logging.info(' '.join(args))
             g = subprocess.Popen(args)
             g.wait()
 
@@ -212,8 +215,8 @@ class GnuPlot(object):
         self.write(g, p)
         self.write(g, 'unset output') # needed to flush before quiting
 
-        self._print('finished plotting, waiting for gnuplot to flush output...')
+        logging.info('finished plotting, waiting for gnuplot to flush output...')
         sleep(1)
         self.write(g, 'quit')
         g.kill()
-        self._print('gnuplot done')
+        logging.info('gnuplot done')

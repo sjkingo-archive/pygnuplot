@@ -4,10 +4,11 @@ from gnuplot import GnuPlot
 from StringIO import StringIO
 import sys
 
+VERBOSE = True
 #fp = StringIO()
 
 g = GnuPlot(sys.argv[1], filled=True, filled_familiar_colour='red', opacity=0.5,
-        xlabel='Accuracy (%)', ylabel='Iterations', verbose=True, title='Test SVG')
+        xlabel='Accuracy (%)', ylabel='Iterations', verbose=VERBOSE, title='Test SVG')
 
 s = """0   4.098360    3.884533
 50  55.59515    38.48895
