@@ -2,7 +2,7 @@
 
 from gnuplot import GnuPlot
 
-g = GnuPlot('test.eps', filled_unfamiliar=True)
+g = GnuPlot('test.svg', filled=True, filled_familiar_colour='red', opacity=0.5)
 
 s = """0   4.098360    3.884533
 50  55.59515    38.48895

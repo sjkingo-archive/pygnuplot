@@ -18,6 +18,8 @@ class GnuPlot(object):
         'smooth': True,
         'filled': False,
         'filled_colour': 'skyblue', # see 'gnuplot> show palette colornames'
+        'opacity': 1.0,
+        'opacity_border': False,
     }
 
     _output_types = {
@@ -74,6 +76,12 @@ class GnuPlot(object):
 
         self.write(g, 'set term %s' % self._output_types[self.output_ext])
         self.write(g, 'set output "%s"' % self.output_filename)
+
+        if self.opts.get('opacity') != 1.0:
+            s = 'set style fill solid %.3f' % (self.opts.get('opacity'))
+            if not self.opts.get('opacity_border'):
+                s += ' noborder'
+            self.write(g, s)
 
         p = ''
         for n, (label, path, num_axes) in enumerate(plots):
