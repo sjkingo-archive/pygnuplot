@@ -48,9 +48,7 @@ class GnuPlot(object):
             if output.closed:
                 raise IOError('The file-like object passed is not open')
             self.output_fp = output
-            fd, self.output_filename = mkstemp(suffix='.gnuplot-output')
-            os.close(fd)
-            self._files.append(self.output_filename)
+            _, self.output_filename = self._mktmp(suffix='.gnuplot-output')
         else:
             self.output_filename = output
 
@@ -87,14 +85,24 @@ class GnuPlot(object):
         self.output_filename_orig = self.output_filename
         if self.output_fp is not None:
             self.output_filename_orig += '.png'
-        fd, self.output_filename = mkstemp(suffix='.gnuplot-output.svg')
-        os.close(fd)
-        self._files.append(self.output_filename)
+        _, self.output_filename = self._mktmp(suffix='.gnuplot-output.svg')
 
     def __del__(self):
         for f in self._files:
             print('removing temp file', f)
             os.remove(f)
+
+    def _mktmp(self, close=True, **kwargs):
+        fd, path = mkstemp(**kwargs)
+        if close:
+            os.close(fd)
+        self._files.append(path)
+        print('created temp file', path, end='')
+        if close:
+            print(' (closed)')
+        else:
+            print(' (open)')
+        return fd, path
 
     def write(self, gnuplot, data):
         self._print(data)
@@ -108,8 +116,8 @@ class GnuPlot(object):
     def plot(self, data_points):
         files = []
         for label, vals in data_points:
-            fd, path = mkstemp(suffix='.gnuplot-%s' % label, text=True)
-            self._files.append(path)
+            fd, path = self._mktmp(suffix='.gnuplot-%s' % label, close=False,
+                    text=True)
             files.append((label, path, len(vals[0])))
             for coords in vals:
                 for i, x in enumerate(coords):
