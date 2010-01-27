@@ -1,6 +1,5 @@
 #!/usr/bin/env python2.6
 
-from __future__ import print_function
 import logging
 from tempfile import mkstemp
 from time import sleep
