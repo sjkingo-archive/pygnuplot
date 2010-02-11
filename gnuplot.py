@@ -184,6 +184,9 @@ class GnuPlot(object):
                 p += ', "%s"' % path
             p += ' using %s' % axes
 
+            # sanitise label
+            label_clean = label.replace(' ', '_').lower()
+
             # smooth=True allows smoothing of the lines
             # (note that this will silently fail if lines != True)
             if self.opts.get('smooth') and self.opts.get('lines'):
@@ -194,7 +197,7 @@ class GnuPlot(object):
             
             # lines=True draws lines between each data point
             if self.opts.get('lines') and (not self.opts.get('filled') and \
-                    not self.opts.get('filled_%s' % label, False)):
+                    not self.opts.get('filled_%s' % label_clean, False)):
                 p += ' with lines'
 
             # filled=True will fill the plot from the given "line" made by
@@ -205,10 +208,10 @@ class GnuPlot(object):
             # above.
             #
             # Change the colour by setting filled_colour='<rgb_or_name>'
-            if self.opts.get('filled') or self.opts.get('filled_%s' % label,
+            if self.opts.get('filled') or self.opts.get('filled_%s' % label_clean,
                     False):
                 p += ' with filledcurves x1 lt rgb "%s"' % \
-                        self.opts.get('filled_%s_colour' % label, 
+                        self.opts.get('filled_%s_colour' % label_clean, 
                         self.opts.get('filled_colour'))
 
         self.write(g, p)
